@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#11385f">
+<title>Beer Facts · Everything Wine Staff Tool</title>
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Beer+Facts%22%2C%22short_name%22%3A%22Beer%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23EFE7D8%22%2C%22theme_color%22%3A%22%2311385f%22%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Marcellus&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7EF;--page:#EFE7D8;--ink:#2A2320;--ink-soft:#7A6F64;--ink-faint:#B6A998;
+    --line:#E6DCCB;--line-strong:#D8CCB6;--wine:#11385f;--wine-dark:#0b2a47;--wine-tint:#E0EAF3;
+    --gold:#C49A4A;--gold-light:#FBF3E2;--sans:'Hanken Grotesk',system-ui,sans-serif;--serif:'Marcellus',Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    background:radial-gradient(120% 80% at 50% -10%,#F6EFE2 0%,var(--page) 60%) fixed;
+    color:var(--ink);min-height:100vh;display:flex;justify-content:center;
+    padding:32px 16px 40px;-webkit-font-smoothing:antialiased;
+  }
+  .screen{
+    background:var(--paper);border-radius:18px;border:1px solid var(--line-strong);
+    box-shadow:0 1px 0 rgba(255,255,255,0.6) inset,0 18px 50px -24px rgba(60,30,20,0.45);
+    overflow:hidden;width:100%;max-width:452px;align-self:flex-start;
+  }
+  .masthead{padding:22px 22px 18px;border-bottom:1px solid var(--line);position:relative;}
+  .masthead::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;
+    background:linear-gradient(90deg,var(--wine) 0%,var(--wine) 60%,var(--gold) 60%,var(--gold) 100%);opacity:0.9;}
+  .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .brand-mark{width:30px;height:30px;border-radius:50%;background:var(--wine);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .brand-mark span{font-family:var(--serif);color:#F6E3C8;font-size:15px;line-height:1;}
+  .brand-over{font-size:10.5px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--wine);}
+  .brand-sub{font-size:11px;color:var(--ink-soft);letter-spacing:0.04em;margin-top:1px;}
+  .masthead h1{font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.05;color:var(--wine);letter-spacing:0.01em;}
+  .masthead .tagline{font-size:12.5px;color:var(--ink-soft);margin-top:6px;}
+  .filter-wrap{padding:14px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FFFDF8,#FBF6ED);}
+  .filter-label{font-size:10.5px;font-weight:700;color:var(--ink-faint);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;}
+  .filters{display:flex;flex-wrap:wrap;gap:7px;}
+  .filter-btn{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:99px;cursor:pointer;border:1px solid var(--line-strong);background:#fff;color:var(--ink-soft);font-family:var(--sans);transition:background .12s,color .12s,border-color .12s;-webkit-tap-highlight-color:transparent;}
+  .filter-btn:hover{border-color:var(--wine);color:var(--wine);}
+  .filter-btn.active{background:var(--wine);color:#FBF3E6;border-color:var(--wine);}
+  .cards{padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .card.hidden{display:none;}
+  .card-header{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);}
+  .card-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .dot-light{background:#E8D87A;border:1px solid var(--line-strong);}
+  .dot-hop{background:#6B8E23;}
+  .dot-dark{background:#2A1A0A;}
+  .dot-malt{background:#8B4513;}
+  .dot-sour{background:#C0392B;}
+  .dot-belgian{background:#7B4F8B;}
+  .card-title{font-family:var(--serif);font-size:16px;font-weight:400;color:var(--wine);flex:1;}
+  .card-tag{font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--ink-soft);background:var(--page);flex-shrink:0;}
+  .card-body{padding:13px 16px;display:flex;flex-direction:column;gap:10px;}
+  .row{display:flex;gap:8px;align-items:flex-start;}
+  .row-label{font-size:10.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);min-width:72px;padding-top:1px;flex-shrink:0;}
+  .row-val{font-size:13px;color:var(--ink);line-height:1.5;flex:1;}
+  .row-val strong{font-weight:600;color:var(--wine);}
+  .divider{height:1px;background:var(--line);margin:2px 0;}
+  .pills-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+  .style-pill{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:99px;border:1px solid var(--wine);background:var(--wine-tint);color:var(--wine);cursor:pointer;transition:background .12s,color .12s;-webkit-tap-highlight-color:transparent;}
+  .style-pill:hover{background:var(--wine);color:#FBF3E6;}
+  .style-pill:active{transform:scale(0.96);}
+  .pairing-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+  .pairing-pill{font-size:11.5px;padding:4px 10px;border-radius:99px;border:1px solid var(--gold-light);background:var(--gold-light);color:#7a5a1a;font-weight:500;}
+  .style-drawer{display:none;margin-top:8px;background:#FDFAF4;border:1px solid var(--gold);border-radius:12px;overflow:hidden;}
+  .style-drawer.open{display:block;}
+  .drawer-header{background:var(--wine);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
+  .drawer-title{font-family:var(--serif);font-size:15px;color:#F0E8D8;}
+  .drawer-close{background:none;border:none;color:#c8a96e;font-size:20px;line-height:1;cursor:pointer;padding:0 2px;font-family:var(--sans);}
+  .drawer-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+  .d-row{display:flex;gap:8px;align-items:flex-start;}
+  .d-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);min-width:64px;padding-top:1px;flex-shrink:0;}
+  .d-val{font-size:12.5px;color:var(--ink);line-height:1.5;flex:1;}
+  .d-val strong{font-weight:600;color:var(--wine);}
+  .d-pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
+  .d-pill{font-size:11px;padding:3px 9px;border-radius:99px;background:var(--gold-light);border:1px solid #e8d49a;color:#7a5a1a;font-weight:500;}
+  .d-bc{background:#E0EAF3;border:1px solid #b0c8e0;color:#0b2a47;}
+  .d-divider{height:1px;background:var(--line);}
+  .d-sell{background:#EAF2EE;border:1px solid #b0d4c0;color:#2d5a45;font-size:12px;border-radius:8px;padding:9px 11px;line-height:1.5;margin-top:4px;}
+  .d-sell strong{font-weight:700;display:block;margin-bottom:2px;color:#1e4030;}
+  footer{border-top:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;}
+  footer span{font-size:11px;color:var(--ink-faint);}
+  footer a{font-size:11px;font-weight:600;color:var(--ink-soft);text-decoration:none;}
+  footer a:hover{color:var(--wine);}
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="masthead">
+    <div class="brand-row">
+      <div class="brand-mark"><span>EW</span></div>
+      <div>
+        <div class="brand-over">Everything Wine</div>
+        <div class="brand-sub">River District Vancouver</div>
+      </div>
+    </div>
+    <h1>Beer Facts</h1>
+    <p class="tagline">Flavour-first reference — tap any style for details & selling tips.</p>
+  </div>
+
+  <div class="filter-wrap">
+    <div class="filter-label">Filter by flavour</div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filter('all')">All</button>
+      <button class="filter-btn" onclick="filter('light')">Light & Crisp</button>
+      <button class="filter-btn" onclick="filter('hop')">Hop-Forward</button>
+      <button class="filter-btn" onclick="filter('dark')">Dark & Roasty</button>
+      <button class="filter-btn" onclick="filter('malt')">Malt & Sweet</button>
+      <button class="filter-btn" onclick="filter('sour')">Sour & Wild</button>
+      <button class="filter-btn" onclick="filter('belgian')">Belgian & Specialty</button>
+    </div>
+  </div>
+
+  <div class="cards">
+
+    <!-- ══ LIGHT & CRISP ══ -->
+    <div class="card" data-cat="light">
+      <div class="card-header"><span class="card-dot dot-light"></span><span class="card-title">Light & Crisp</span><span class="card-tag">Lager · Wheat · Kölsch</span></div>
+      <div class="card-body">
+        <div class="row"><span class="row-label">Who it's for</span><span class="row-val">Customers who want something refreshing and easy-drinking. Wine drinkers trying beer for the first time. Hot day, patio, anything goes.</span></div>
+        <div class="row"><span class="row-label">Tap to learn</span>
+          <div class="pills-row">
+            <span class="style-pill" onclick="openDrawer('lager',this)">Lager</span>
+            <span class="style-pill" onclick="openDrawer('pilsner',this)">Pilsner</span>
+            <span class="style-pill" onclick="openDrawer('kolsch',this)">Kölsch</span>
+            <span class="style-pill" onclick="openDrawer('wheat',this)">Wheat Beer</span>
+            <span class="style-pill" onclick="openDrawer('session-ale',this)">Session Ale</span>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-lager">
+          <div class="drawer-header"><span class="drawer-title">Lager</span><button class="drawer-close" onclick="closeDrawer('lager')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Clean, crisp, neutral. Mild grain sweetness, low bitterness, very refreshing. The world's most popular beer style.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Glassware</span><span class="d-val">Pint glass or stein. Always serve cold (2–4°C).</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Stella Artois</span><span class="d-pill">Heineken</span><span class="d-pill">Corona</span><span class="d-pill">Peroni</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Parallel 49 Lager</span><span class="d-pill d-bc">Steamworks Lager</span><span class="d-pill d-bc">Four Winds Nectarous</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Pizza</span><span class="d-pill">Burgers</span><span class="d-pill">Fried chicken</span><span class="d-pill">Spicy food</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "If you want something cold, easy, and refreshing — a lager is the classic choice. Light, clean, no surprises. Great with any food."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-pilsner">
+          <div class="drawer-header"><span class="drawer-title">Pilsner</span><button class="drawer-close" onclick="closeDrawer('pilsner')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Crisp, dry, slightly hoppy. More character than standard lager — floral and herbal hop aroma, clean bitterness, golden colour.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–5.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Styles</span><span class="d-val"><strong>Czech Pilsner</strong> (Bohemian) — fuller, rounder, soft water. <strong>German Pilsner</strong> — drier, crisper, more bitter.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Pilsner Urquell</span><span class="d-pill">Bitburger</span><span class="d-pill">Warsteiner</span><span class="d-pill">Kronenbourg 1664</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Dageraad Burnabarian</span><span class="d-pill d-bc">Brassneck Passive Aggressive</span><span class="d-pill d-bc">Strange Fellows Talisman</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Seafood</span><span class="d-pill">Sausages</span><span class="d-pill">Light salads</span><span class="d-pill">Schnitzel</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "A pilsner is like a lager with more personality — still light and crisp but with a little more hop flavour and aroma. The original craft beer, honestly."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-kolsch">
+          <div class="drawer-header"><span class="drawer-title">Kölsch</span><button class="drawer-close" onclick="closeDrawer('kolsch')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Light, clean, subtly fruity. Ale fermented cold — hybrid character. Pale gold, soft fruit esters, gentle bitterness. Very approachable.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4.4–5.2%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Origin</span><span class="d-val">Cologne (Köln), Germany. Traditionally served in tall, narrow 200ml glasses called Stangen.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Reissdorf Kölsch</span><span class="d-pill">Früh Kölsch</span><span class="d-pill">Gaffel Kölsch</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Andina Kolsch</span><span class="d-pill d-bc">Howe Sound Kölsch</span><span class="d-pill d-bc">Superflux Kölsch</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Grilled fish</span><span class="d-pill">Light pasta</span><span class="d-pill">Salads</span><span class="d-pill">Mild cheese</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Kölsch is one of the most drinkable beers there is — light like a lager but with a tiny bit of fruitiness from being brewed like an ale. If someone likes Sauvignon Blanc, they'll love a Kölsch."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-wheat">
+          <div class="drawer-header"><span class="drawer-title">Wheat Beer</span><button class="drawer-close" onclick="closeDrawer('wheat')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Hazy, soft, fruity. Banana and clove from yeast (Hefeweizen), or citrusy and light (American Wheat). Creamy mouthfeel, low bitterness.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–5.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Styles</span><span class="d-val"><strong>Hefeweizen</strong> (German) — banana, clove, unfiltered, hazy. <strong>Witbier</strong> (Belgian) — coriander, orange peel, hazy. <strong>American Wheat</strong> — lighter, less yeast character.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Paulaner Hefeweizen</span><span class="d-pill">Erdinger</span><span class="d-pill">Blue Moon</span><span class="d-pill">Hoegaarden</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Granville Island Robson Hefeweizen</span><span class="d-pill d-bc">R&B East Side Wheat</span><span class="d-pill d-bc">Steamworks Pumphouse Wheat</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Seafood</span><span class="d-pill">Salads</span><span class="d-pill">Brunch</span><span class="d-pill">Light desserts</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Wheat beers are soft, hazy, and a little fruity — almost like a smoothie of the beer world. German ones taste like banana bread; Belgian ones like orange and spice. Great for people who find regular beer too bitter."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-session-ale">
+          <div class="drawer-header"><span class="drawer-title">Session Ale</span><button class="drawer-close" onclick="closeDrawer('session-ale')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Light, easy-drinking, low alcohol. Can be hoppy, malty, or fruity depending on style. Designed to drink multiple pints without getting too full or too drunk.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">3.5–4.5% — "session" means drinkable all session</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Founders All Day IPA</span><span class="d-pill">Firestone Easy Jack</span><span class="d-pill">Tennent's</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Parallel 49 Tricycle</span><span class="d-pill d-bc">Four Winds Session IPA</span><span class="d-pill d-bc">Postmark Session Ale</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Anything casual</span><span class="d-pill">Pub food</span><span class="d-pill">BBQ</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Session ales are made for drinking — lower alcohol, easy, refreshing. Great choice if someone wants to have a few beers without going overboard."</div>
+          </div>
+        </div>
+
+        <div class="row"><span class="row-label">Quick tip</span><span class="row-val">If a customer says <strong>"I just want something light"</strong> — lager or Kölsch. <strong>"Something refreshing but with a bit more flavour"</strong> — Pilsner or Wheat Beer.</span></div>
+      </div>
+    </div>
+
+    <!-- ══ HOP-FORWARD ══ -->
+    <div class="card" data-cat="hop">
+      <div class="card-header"><span class="card-dot dot-hop"></span><span class="card-title">Hop-Forward</span><span class="card-tag">IPA · Pale Ale · Hoppy</span></div>
+      <div class="card-body">
+        <div class="row"><span class="row-label">Who it's for</span><span class="row-val">Customers who say "I like something hoppy" or "give me something with flavour." The most popular craft beer category in BC.</span></div>
+        <div class="row"><span class="row-label">Tap to learn</span>
+          <div class="pills-row">
+            <span class="style-pill" onclick="openDrawer('pale-ale',this)">Pale Ale</span>
+            <span class="style-pill" onclick="openDrawer('ipa',this)">IPA</span>
+            <span class="style-pill" onclick="openDrawer('wcipa',this)">West Coast IPA</span>
+            <span class="style-pill" onclick="openDrawer('hazy',this)">Hazy / NEIPA</span>
+            <span class="style-pill" onclick="openDrawer('dipa',this)">Double IPA</span>
+            <span class="style-pill" onclick="openDrawer('session-ipa',this)">Session IPA</span>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-pale-ale">
+          <div class="drawer-header"><span class="drawer-title">Pale Ale</span><button class="drawer-close" onclick="closeDrawer('pale-ale')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Balanced hop and malt. Citrus, floral, light pine. Gateway to hoppy beer — not too bitter, not too heavy. The most accessible IPA alternative.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4.5–5.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Sierra Nevada Pale Ale</span><span class="d-pill">Coopers Pale Ale</span><span class="d-pill">Fuller's London Pride</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Granville Island Pale Ale</span><span class="d-pill d-bc">Central City Red Racer Pale</span><span class="d-pill d-bc">Tofino Blonde Ale</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Burgers</span><span class="d-pill">Grilled chicken</span><span class="d-pill">Mild curry</span><span class="d-pill">Cheddar</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "A pale ale is the perfect middle ground — more flavour than a lager but way less bitter than an IPA. If someone is new to craft beer, this is where I'd start them."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-ipa">
+          <div class="drawer-header"><span class="drawer-title">IPA — India Pale Ale</span><button class="drawer-close" onclick="closeDrawer('ipa')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Assertively hoppy, bitter, aromatic. Citrus, pine, resin, tropical fruit. The backbone of craft beer.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5.5–7.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">History</span><span class="d-val">Originally brewed strong and heavily hopped for the voyage from England to India — hops act as a preservative.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Stone IPA</span><span class="d-pill">Lagunitas IPA</span><span class="d-pill">Goose Island IPA</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Phillips Analogue IPA</span><span class="d-pill d-bc">Bomber Brewing IPA</span><span class="d-pill d-bc">Driftwood Fat Tug IPA</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Spicy food</span><span class="d-pill">Strong cheese</span><span class="d-pill">Grilled meats</span><span class="d-pill">BBQ</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "IPA is the craft beer world's most popular style — bold, hoppy, aromatic. The bitterness is actually refreshing, like a dry wine. If they love a crisp Sauvignon Blanc or gin, the hop aroma will appeal to them."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-wcipa">
+          <div class="drawer-header"><span class="drawer-title">West Coast IPA</span><button class="drawer-close" onclick="closeDrawer('wcipa')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Dry, bitter, piney, resinous. Clear and golden. More bitter and drier than East Coast/Hazy styles. This is the BC craft beer signature style.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">6–7.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Hops</span><span class="d-val">Cascade, Centennial, Chinook, Simcoe, Amarillo. Pine, grapefruit, resin.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Pliny the Elder</span><span class="d-pill">Knee Deep Breaking Bud</span><span class="d-pill">Ballast Point Sculpin</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Four Winds IPA</span><span class="d-pill d-bc">Brassneck Passive Aggressive</span><span class="d-pill d-bc">Yellow Dog Fetch IPA</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Fish tacos</span><span class="d-pill">Grilled salmon</span><span class="d-pill">Strong aged cheese</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "West Coast IPA is what BC craft beer is known for — dry, bitter, piney, refreshing. If someone is a craft beer fan visiting from out of town, this is what they should try first."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-hazy">
+          <div class="drawer-header"><span class="drawer-title">Hazy IPA / NEIPA</span><button class="drawer-close" onclick="closeDrawer('hazy')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Soft, juicy, tropical. Low bitterness despite being hoppy. Tastes like drinking tropical fruit juice. Hazy/cloudy appearance from unfiltered dry hopping.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5.5–8%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Hops</span><span class="d-val">Citra, Mosaic, Galaxy, El Dorado — New World hops with tropical, mango, passionfruit character.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Tree House Julius</span><span class="d-pill">Alchemist Heady Topper</span><span class="d-pill">Voodoo Ranger Juicy Haze</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Superflux Juicy IPA</span><span class="d-pill d-bc">Four Winds Nectarous</span><span class="d-pill d-bc">Strathcona Hazy IPA</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Spicy Thai</span><span class="d-pill">Sushi</span><span class="d-pill">Grilled shrimp</span><span class="d-pill">Mango dishes</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Hazy IPAs are the most approachable hoppy beer — they're fruity and juicy, almost like tropical fruit juice, with barely any bitterness. If someone thinks they don't like IPAs, a hazy will change their mind."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-dipa">
+          <div class="drawer-header"><span class="drawer-title">Double IPA (DIPA / Imperial IPA)</span><button class="drawer-close" onclick="closeDrawer('dipa')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Intensely hoppy, high alcohol, full body. Everything an IPA is but turned up. Can be bitter and resinous (West Coast DIPA) or juicy and tropical (Hazy DIPA).</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">7.5–10%+ — sip slowly</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Pliny the Elder</span><span class="d-pill">Dogfish Head 90 Min</span><span class="d-pill">Stone Ruination</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Driftwood Sartori DIPA</span><span class="d-pill d-bc">Central City Thor's Hammer</span><span class="d-pill d-bc">Bomber DIPA</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Strong aged cheese</span><span class="d-pill">Spicy wings</span><span class="d-pill">Rich BBQ</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "A Double IPA is for the serious hop lover — twice the hops, higher alcohol, more of everything. Treat it like a wine — sip it, don't chug it. Usually sold in smaller formats for good reason."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-session-ipa">
+          <div class="drawer-header"><span class="drawer-title">Session IPA</span><button class="drawer-close" onclick="closeDrawer('session-ipa')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Hoppy aroma and flavour at low alcohol. Citrus, tropical, light pine. All the IPA character without the weight.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">3.5–4.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Founders All Day IPA</span><span class="d-pill">Firestone Easy Jack</span><span class="d-pill">Dogfish Head Slightly Mighty</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Four Winds Session IPA</span><span class="d-pill d-bc">Parallel 49 Session IPA</span><span class="d-pill d-bc">Postmark Session IPA</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Salads</span><span class="d-pill">Light appetizers</span><span class="d-pill">Casual food</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "All the hop flavour of an IPA at half the alcohol — great for someone who wants to enjoy a couple of beers over a long lunch or patio session without feeling it."</div>
+          </div>
+        </div>
+
+        <div class="row"><span class="row-label">Quick tip</span><span class="row-val"><strong>"Not too bitter"</strong> → Pale Ale or Hazy IPA. <strong>"I love hoppy beer"</strong> → West Coast IPA. <strong>"Big and bold"</strong> → Double IPA.</span></div>
+      </div>
+    </div>
+
+    <!-- ══ DARK & ROASTY ══ -->
+    <div class="card" data-cat="dark">
+      <div class="card-header"><span class="card-dot dot-dark"></span><span class="card-title">Dark & Roasty</span><span class="card-tag">Stout · Porter · Dark Lager</span></div>
+      <div class="card-body">
+        <div class="row"><span class="row-label">Who it's for</span><span class="row-val">Coffee and chocolate lovers. Customers who say "I like something dark and rich." Red wine drinkers looking for a beer equivalent.</span></div>
+        <div class="row"><span class="row-label">Tap to learn</span>
+          <div class="pills-row">
+            <span class="style-pill" onclick="openDrawer('stout',this)">Stout</span>
+            <span class="style-pill" onclick="openDrawer('imperial-stout',this)">Imperial Stout</span>
+            <span class="style-pill" onclick="openDrawer('porter',this)">Porter</span>
+            <span class="style-pill" onclick="openDrawer('schwarzbier',this)">Schwarzbier</span>
+            <span class="style-pill" onclick="openDrawer('dark-lager',this)">Dark Lager</span>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-stout">
+          <div class="drawer-header"><span class="drawer-title">Stout</span><button class="drawer-close" onclick="closeDrawer('stout')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Dark, roasty, coffee, chocolate. Smooth and creamy (especially Milk Stout). Dry finish (Dry Irish Stout). Surprisingly light-bodied for the dark colour.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–6% (standard) · Milk Stout slightly sweeter</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Styles</span><span class="d-val"><strong>Dry Irish Stout</strong> — Guinness style, roasty, bitter finish. <strong>Milk Stout</strong> — lactose added, sweet and creamy. <strong>Oatmeal Stout</strong> — silky, smooth.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Guinness Draught</span><span class="d-pill">Murphy's Irish Stout</span><span class="d-pill">Left Hand Milk Stout</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Parallel 49 Ugly Sweater</span><span class="d-pill d-bc">Howe Sound Total Eclipse</span><span class="d-pill d-bc">Steamworks Heroica Oatmeal</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Oysters</span><span class="d-pill">Chocolate cake</span><span class="d-pill">BBQ ribs</span><span class="d-pill">Strong cheese</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Stout looks intimidating but it's actually lighter than it looks — Guinness for example is lower in calories than a lager. It tastes like coffee and dark chocolate. Oysters and stout is a classic pairing."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-imperial-stout">
+          <div class="drawer-header"><span class="drawer-title">Imperial / Russian Imperial Stout</span><button class="drawer-close" onclick="closeDrawer('imperial-stout')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Massively complex — dark chocolate, espresso, dark fruit, molasses, vanilla (if barrel-aged), warming alcohol. The most intense beer style. Often barrel-aged in whisky or bourbon barrels.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">8–15%+ — treat like a dessert wine or spirit</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Founders KBS</span><span class="d-pill">Goose Island Bourbon County</span><span class="d-pill">Deschutes The Abyss</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Central City Thor's Hammer</span><span class="d-pill d-bc">Howe Sound Pothole Filler</span><span class="d-pill d-bc">Yellow Dog Imperial Stout</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Dark chocolate</span><span class="d-pill">Stilton</span><span class="d-pill">Crème brûlée</span><span class="d-pill">On its own</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Imperial Stout is the Port wine of the beer world — rich, complex, high alcohol, best in small glasses. Often barrel-aged in whisky casks, so whisky fans absolutely love it. A dessert in a glass."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-porter">
+          <div class="drawer-header"><span class="drawer-title">Porter</span><button class="drawer-close" onclick="closeDrawer('porter')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Roasty but slightly lighter than stout. Chocolate, toffee, caramel, light coffee. Smooth and balanced. The predecessor to stout.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4.5–6.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Fuller's London Porter</span><span class="d-pill">Anchor Porter</span><span class="d-pill">Deschutes Black Butte</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Granville Island Lions Winter Ale</span><span class="d-pill d-bc">Howe Sound Diamond Head Oatmeal Porter</span><span class="d-pill d-bc">Phillips Hammer Imperial Porter</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Smoked meats</span><span class="d-pill">Mushroom dishes</span><span class="d-pill">Chocolate</span><span class="d-pill">Aged cheddar</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Think of a porter as a stout's slightly more approachable sibling — same chocolate and coffee notes but a little lighter. Great for someone who wants to try a dark beer without going full stout."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-schwarzbier">
+          <div class="drawer-header"><span class="drawer-title">Schwarzbier (Black Lager)</span><button class="drawer-close" onclick="closeDrawer('schwarzbier')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Dark colour, light body. Clean lager character with hints of roasted malt. Very approachable — much lighter than it looks. The "gateway dark beer."</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">3.8–5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Köstritzer Schwarzbier</span><span class="d-pill">Modelo Negra</span><span class="d-pill">Sapporo Black</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Dageraad Burnabarian Dark</span><span class="d-pill d-bc">Andina Schwarzbier</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Grilled sausages</span><span class="d-pill">Dark bread</span><span class="d-pill">Roast pork</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Schwarzbier is a dark lager — it looks like a stout but drinks like a lager. Super clean, crisp, just a hint of roast. Perfect for someone curious about dark beer but worried about it being too heavy."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-dark-lager">
+          <div class="drawer-header"><span class="drawer-title">Dark Lager / Dunkel</span><button class="drawer-close" onclick="closeDrawer('dark-lager')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Malty, smooth, toasted bread, caramel, light chocolate. Clean lager finish. Munich-style, very drinkable. Less roasty than Schwarzbier.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4.5–5.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Ayinger Dunkel</span><span class="d-pill">Spaten Dunkel</span><span class="d-pill">Negra Modelo</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Steamworks Dunkel</span><span class="d-pill d-bc">Powell Brewery Dunkel</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Roast chicken</span><span class="d-pill">Pretzels</span><span class="d-pill">Sausages</span><span class="d-pill">Smoked meats</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "A Dunkel is a dark lager that tastes like liquid pumpernickel bread — toasty, malty, smooth. Not bitter at all, just warm and comforting. Great for autumn and winter."</div>
+          </div>
+        </div>
+
+        <div class="row"><span class="row-label">Quick tip</span><span class="row-val"><strong>"Worried it'll be too heavy"</strong> → Schwarzbier or Dunkel. <strong>"Love coffee and chocolate"</strong> → Stout or Porter. <strong>"Want something special"</strong> → Imperial Stout.</span></div>
+      </div>
+    </div>
+
+    <!-- ══ MALT & SWEET ══ -->
+    <div class="card" data-cat="malt">
+      <div class="card-header"><span class="card-dot dot-malt"></span><span class="card-title">Malt & Sweet</span><span class="card-tag">Amber · Brown · Märzen</span></div>
+      <div class="card-body">
+        <div class="row"><span class="row-label">Who it's for</span><span class="row-val">Customers who want something fuller and more flavourful than a lager but not hoppy or dark. Great gateway for wine drinkers — toffee, caramel, biscuit flavours.</span></div>
+        <div class="row"><span class="row-label">Tap to learn</span>
+          <div class="pills-row">
+            <span class="style-pill" onclick="openDrawer('amber',this)">Amber Ale</span>
+            <span class="style-pill" onclick="openDrawer('red-ale',this)">Red Ale</span>
+            <span class="style-pill" onclick="openDrawer('brown-ale',this)">Brown Ale</span>
+            <span class="style-pill" onclick="openDrawer('marzen',this)">Märzen / Oktoberfest</span>
+            <span class="style-pill" onclick="openDrawer('bock',this)">Bock</span>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-amber">
+          <div class="drawer-header"><span class="drawer-title">Amber Ale</span><button class="drawer-close" onclick="closeDrawer('amber')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Balanced malt and hops. Caramel, toffee, light toasted bread, gentle citrus hop. The most approachable "middle ground" beer. Amber colour.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4.5–6%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Fat Tire Amber Ale</span><span class="d-pill">Redhook Amber</span><span class="d-pill">Sleeman Amber</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Granville Island Robson Amber</span><span class="d-pill d-bc">Big Rock Grasshopper</span><span class="d-pill d-bc">Howe Sound Diamond Head</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Burgers</span><span class="d-pill">BBQ chicken</span><span class="d-pill">Pizza</span><span class="d-pill">Mild cheddar</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Amber ale is the perfect crowd-pleaser — not too hoppy, not too dark, not too light. Tastes like caramel and light bread. If someone says they're not sure what they want, start here."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-red-ale">
+          <div class="drawer-header"><span class="drawer-title">Red Ale / Irish Red</span><button class="drawer-close" onclick="closeDrawer('red-ale')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Malty, slightly sweet, minimal hops. Caramel, toffee, biscuit, light roast. Red/copper colour. Smooth and easy. Irish Red = more malt-forward and sessionable.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–6%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Smithwick's Irish Red</span><span class="d-pill">Kilkenny</span><span class="d-pill">Alexander Keith's Red</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Cannery Brewing Anarchist Amber</span><span class="d-pill d-bc">Mt. Begbie Red Shirt</span><span class="d-pill d-bc">Fernie Brewing What the Huck</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Irish stew</span><span class="d-pill">Roast beef</span><span class="d-pill">Cheddar</span><span class="d-pill">Pub food</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Red ales are malty and smooth — like liquid toffee but not sweet. Think of it as the Merlot of the beer world. Very food-friendly and easy to drink."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-brown-ale">
+          <div class="drawer-header"><span class="drawer-title">Brown Ale</span><button class="drawer-close" onclick="closeDrawer('brown-ale')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Nutty, chocolatey, toffee, light roast. More malt-forward than amber, less roasty than stout. Dry (English) or sweet and nutty (American).</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–6%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Newcastle Brown Ale</span><span class="d-pill">Samuel Smith's Nut Brown</span><span class="d-pill">Dogfish Head Indian Brown</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Lighthouse Keepers Stout (dark)</span><span class="d-pill d-bc">Howe Sound Boundary Mild</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Roast nuts</span><span class="d-pill">Hazelnut desserts</span><span class="d-pill">Sausages</span><span class="d-pill">Game meat</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Brown ale tastes like hazelnuts and toffee — warm, nutty, comforting. Like a fireside beer. Great for anyone who enjoys Amontillado sherry or aged rum."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-marzen">
+          <div class="drawer-header"><span class="drawer-title">Märzen / Oktoberfest</span><button class="drawer-close" onclick="closeDrawer('marzen')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Rich, toasty, malty, clean lager finish. Amber colour, bready malt, low hop bitterness. Brewed in March (März), lagered through summer, released in September.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5–6%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Paulaner Oktoberfest</span><span class="d-pill">Hacker-Pschorr Märzen</span><span class="d-pill">Samuel Adams Octoberfest</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Steamworks Märzen</span><span class="d-pill d-bc">Andina Oktoberfest</span><span class="d-pill d-bc">Persephone Märzen</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Pretzels</span><span class="d-pill">Roast pork</span><span class="d-pill">Sausages</span><span class="d-pill">Gruyère</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Märzen is the beer of Oktoberfest — toasty, malty, smooth. Like liquid fresh-baked bread. Very sessionable despite looking rich. Great autumn beer."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-bock">
+          <div class="drawer-header"><span class="drawer-title">Bock</span><button class="drawer-close" onclick="closeDrawer('bock')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Strong lager, rich malt, minimal hops. Dark fruit, toffee, chocolate (Doppelbock), warming. Originally brewed as a strong lager for sustenance.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">Bock 6–7% · Doppelbock 7–12%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Styles</span><span class="d-val"><strong>Bock</strong> — amber, malty. <strong>Doppelbock</strong> — double strength, very rich (Paulaner Salvator). <strong>Maibock</strong> — pale, spring seasonal.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Paulaner Salvator</span><span class="d-pill">Ayinger Celebrator</span><span class="d-pill">Shiner Bock</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Howe Sound Devil's Elbow</span><span class="d-pill d-bc">Central City Doppelbock</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Roast pork</span><span class="d-pill">Game</span><span class="d-pill">Strong cheese</span><span class="d-pill">Chocolate</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Bock is a strong, rich German lager — think of it as the cognac of lagers. Warming, complex, malty. Monks brewed it to sustain themselves through Lent. Great for a cold evening."</div>
+          </div>
+        </div>
+
+        <div class="row"><span class="row-label">Quick tip</span><span class="row-val"><strong>"Something in the middle"</strong> → Amber Ale. <strong>"Autumn/winter vibes"</strong> → Märzen or Bock. <strong>"Nutty and smooth"</strong> → Brown Ale or Red Ale.</span></div>
+      </div>
+    </div>
+
+    <!-- ══ SOUR & WILD ══ -->
+    <div class="card" data-cat="sour">
+      <div class="card-header"><span class="card-dot dot-sour"></span><span class="card-title">Sour & Wild</span><span class="card-tag">Lambic · Gose · Berliner</span></div>
+      <div class="card-body">
+        <div class="row"><span class="row-label">Who it's for</span><span class="row-val">Wine drinkers, adventurous customers, anyone who says "something different." Natural wine lovers. Sours are the fastest-growing beer category in BC craft.</span></div>
+        <div class="row"><span class="row-label">Tap to learn</span>
+          <div class="pills-row">
+            <span class="style-pill" onclick="openDrawer('berliner',this)">Berliner Weisse</span>
+            <span class="style-pill" onclick="openDrawer('gose',this)">Gose</span>
+            <span class="style-pill" onclick="openDrawer('lambic',this)">Lambic</span>
+            <span class="style-pill" onclick="openDrawer('gueuze',this)">Gueuze</span>
+            <span class="style-pill" onclick="openDrawer('fruit-sour',this)">Fruit Sour</span>
+            <span class="style-pill" onclick="openDrawer('flanders',this)">Flanders Red</span>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-berliner">
+          <div class="drawer-header"><span class="drawer-title">Berliner Weisse</span><button class="drawer-close" onclick="closeDrawer('berliner')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Tart, light, refreshing. Lactic sourness, wheat, lemony. Low alcohol. Like a sour lemonade. Often served with fruit syrups in Germany (raspberry or woodruff).</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">2.8–3.8% — very sessionable</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Professor Fritz Briem 1809</span><span class="d-pill">Dogfish Head Festina Peche</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Four Winds Berliner</span><span class="d-pill d-bc">Parallel 49 Sour Cherry Berliner</span><span class="d-pill d-bc">Superflux Berliner</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Salads</span><span class="d-pill">Seafood</span><span class="d-pill">Light desserts</span><span class="d-pill">Brunch</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Berliner Weisse is like sparkling lemonade with a tiny bit of alcohol — refreshing, tart, very light. Perfect for people who want something unusual but approachable. Great patio beer."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-gose">
+          <div class="drawer-header"><span class="drawer-title">Gose</span><button class="drawer-close" onclick="closeDrawer('gose')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Tart, slightly salty, wheat. Lemon, coriander, sea salt finish. The salt enhances flavour without tasting "salty." Very refreshing.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Anderson Valley The Kimmie</span><span class="d-pill">Westbrook Gose</span><span class="d-pill">Avery El Gose</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Strange Fellows Gose</span><span class="d-pill d-bc">Brassneck Gose</span><span class="d-pill d-bc">Dogwood Gose</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Oysters</span><span class="d-pill">Ceviche</span><span class="d-pill">Fish tacos</span><span class="d-pill">Salty snacks</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Gose has a tiny bit of salt in it — like a margarita rim on a beer. It sounds weird but it makes it incredibly refreshing. Wine drinkers who like crisp, mineral whites (Chablis, Albariño) tend to love it."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-lambic">
+          <div class="drawer-header"><span class="drawer-title">Lambic</span><button class="drawer-close" onclick="closeDrawer('lambic')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Funky, complex, very sour. Fermented with wild airborne yeast (Brettanomyces) and bacteria in the Senne Valley of Belgium. Barnyard, leather, green apple, tart. The original wild ale.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5–7%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Variants</span><span class="d-val"><strong>Kriek</strong> — lambic with cherries (tart cherry, dry). <strong>Framboise</strong> — with raspberries. <strong>Peche</strong> — with peach.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Lindemans Kriek</span><span class="d-pill">Cantillon Gueuze</span><span class="d-pill">Timmermans Lambic</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Aged goat cheese</span><span class="d-pill">Duck</span><span class="d-pill">Fruit desserts</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Lambic is the natural wine of the beer world — fermented with wild yeast, funky, complex, and totally unique. Natural wine drinkers and adventurous foodies love it. Lindemans Kriek (cherry) is the most approachable entry point."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-gueuze">
+          <div class="drawer-header"><span class="drawer-title">Gueuze</span><button class="drawer-close" onclick="closeDrawer('gueuze')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Blend of young and old lambics. Sparkling, very dry, complex sour. Lemon, green apple, oak, funk, barnyard. The Champagne of Belgium.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5–8%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Cantillon Gueuze</span><span class="d-pill">3 Fonteinen Gueuze</span><span class="d-pill">Boon Gueuze</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Oysters</span><span class="d-pill">Mussels</span><span class="d-pill">Aged cheese</span><span class="d-pill">Charcuterie</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Gueuze is called the Champagne of Belgium — sparkling, bone dry, complex. If someone drinks natural wine or aged Champagne, this will blow their mind. Not a casual beer — it's an experience."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-fruit-sour">
+          <div class="drawer-header"><span class="drawer-title">Fruit Sour</span><button class="drawer-close" onclick="closeDrawer('fruit-sour')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Tart, fruity, refreshing. Real fruit added to a sour base (Berliner, Gose, or kettle sour). Tastes like sparkling fruit juice. The most approachable sour style.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4–6%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Collective Arts Ransack</span><span class="d-pill">Anderson Valley Briney Melon</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Four Winds Nectarous (Peach)</span><span class="d-pill d-bc">Parallel 49 Sour Cherry</span><span class="d-pill d-bc">Strathcona Passionfruit Sour</span><span class="d-pill d-bc">Dogwood Mixed Fruit Sour</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Desserts</span><span class="d-pill">Light cheeses</span><span class="d-pill">Brunch</span><span class="d-pill">On its own</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Fruit sours are the most approachable beer for non-beer drinkers — they taste like sparkling fruit juice, barely any beer flavour, refreshing and fun. If someone says they don't really drink beer, start here."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-flanders">
+          <div class="drawer-header"><span class="drawer-title">Flanders Red Ale</span><button class="drawer-close" onclick="closeDrawer('flanders')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Complex, sour, vinous. Dark cherry, plum, chocolate, oak, balsamic. Aged in large oak barrels (foeders). Often blended. Called the "Burgundy of Belgium."</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5–7%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Rodenbach Grand Cru</span><span class="d-pill">Duchesse de Bourgogne</span><span class="d-pill">Verhaeghe Vichtenaar</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Duck</span><span class="d-pill">Game meat</span><span class="d-pill">Chocolate</span><span class="d-pill">Aged gouda</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Flanders Red is called the Burgundy of Belgium — it's complex, sour, and wine-like. Red wine drinkers who want to try something completely different will love it. Rodenbach Grand Cru is the benchmark."</div>
+          </div>
+        </div>
+
+        <div class="row"><span class="row-label">Quick tip</span><span class="row-val"><strong>"Never had sour beer"</strong> → Fruit Sour or Gose. <strong>"Likes natural wine"</strong> → Lambic or Gueuze. <strong>"Red wine drinker"</strong> → Flanders Red.</span></div>
+      </div>
+    </div>
+
+    <!-- ══ BELGIAN & SPECIALTY ══ -->
+    <div class="card" data-cat="belgian">
+      <div class="card-header"><span class="card-dot dot-belgian"></span><span class="card-title">Belgian & Specialty</span><span class="card-tag">Witbier · Saison · Trappist</span></div>
+      <div class="card-body">
+        <div class="row"><span class="row-label">Who it's for</span><span class="row-val">Adventurous drinkers, wine lovers, foodies. Belgian beers are the most complex and food-pairable of all styles — often compared to wine in their depth.</span></div>
+        <div class="row"><span class="row-label">Tap to learn</span>
+          <div class="pills-row">
+            <span class="style-pill" onclick="openDrawer('witbier',this)">Witbier</span>
+            <span class="style-pill" onclick="openDrawer('saison',this)">Saison</span>
+            <span class="style-pill" onclick="openDrawer('tripel',this)">Tripel</span>
+            <span class="style-pill" onclick="openDrawer('dubbel',this)">Dubbel</span>
+            <span class="style-pill" onclick="openDrawer('quad',this)">Quadrupel</span>
+            <span class="style-pill" onclick="openDrawer('bsga',this)">Belgian Strong Golden</span>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-witbier">
+          <div class="drawer-header"><span class="drawer-title">Witbier (Belgian White)</span><button class="drawer-close" onclick="closeDrawer('witbier')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Hazy, light, citrusy, spicy. Orange peel, coriander, wheat, gentle yeast character. Refreshing and summery. Blue Moon is a mass-market example.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">4.5–5.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Hoegaarden</span><span class="d-pill">Blue Moon</span><span class="d-pill">Allagash White</span><span class="d-pill">Blanche de Bruxelles</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Parallel 49 Belgian Wit</span><span class="d-pill d-bc">Tofino Blonde (similar)</span><span class="d-pill d-bc">R&B Wit</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Mussels</span><span class="d-pill">Seafood</span><span class="d-pill">Light salads</span><span class="d-pill">Citrus desserts</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Witbier is like a Pinot Grigio in beer form — light, citrusy, a little spicy from the orange peel and coriander. Hazy and refreshing. Very popular with people who don't usually drink beer."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-saison">
+          <div class="drawer-header"><span class="drawer-title">Saison (Farmhouse Ale)</span><button class="drawer-close" onclick="closeDrawer('saison')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Dry, spicy, fruity, refreshing. Pepper, citrus, earthy yeast, hay, floral. Originally brewed for Belgian farmworkers in summer. Hugely food-pairable.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">5–8%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Saison Dupont</span><span class="d-pill">Boulevard Tank 7</span><span class="d-pill">Ommegang Hennepin</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Dageraad Saison</span><span class="d-pill d-bc">Four Winds Saison</span><span class="d-pill d-bc">Brassneck Changeling Saison</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Grilled vegetables</span><span class="d-pill">Soft cheese</span><span class="d-pill">Mussels</span><span class="d-pill">Roast chicken</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Saison is the sommelier's favourite beer style — dry, complex, spicy, incredibly versatile with food. If someone likes Grüner Veltliner or peppery white wines, they'll love a saison. It's what wine people drink when they drink beer."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-tripel">
+          <div class="drawer-header"><span class="drawer-title">Tripel</span><button class="drawer-close" onclick="closeDrawer('tripel')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Golden, strong, spicy, fruity. Banana, clove, pepper, honey, dry finish. High alcohol but deceptively drinkable. Brewed by Trappist monks.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">7.5–10%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Westmalle Tripel</span><span class="d-pill">Chimay White</span><span class="d-pill">St. Bernardus Tripel</span><span class="d-pill">La Trappe Tripel</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Dageraad Burnabarian (Belgian inspired)</span><span class="d-pill d-bc">Yellow Dog Belgian Tripel</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Spicy food</span><span class="d-pill">Soft cheese</span><span class="d-pill">Mussels</span><span class="d-pill">Roast chicken</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Tripel is brewed by Trappist monks — golden, fruity, spicy, high alcohol. It looks like a lager but it's complex and strong. Sip it slowly like a wine. Deceptively easy to drink for 9%."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-dubbel">
+          <div class="drawer-header"><span class="drawer-title">Dubbel</span><button class="drawer-close" onclick="closeDrawer('dubbel')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Dark, malty, fruity. Dark fruit (raisin, plum, fig), chocolate, caramel, spicy yeast. The dark counterpart to Tripel. Rich but not heavy.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">6–8%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Westmalle Dubbel</span><span class="d-pill">Chimay Red</span><span class="d-pill">St. Bernardus Pater 6</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Howe Sound Dubbel Trouble</span><span class="d-pill d-bc">Dageraad Doubbel</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Roast duck</span><span class="d-pill">Lamb stew</span><span class="d-pill">Dark chocolate</span><span class="d-pill">Aged gouda</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "A Dubbel is like a dark fruit cake in a glass — raisins, plum, chocolate, brewed by monks. If someone likes Port wine or Merlot with dark fruit character, they'll love a Dubbel."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-quad">
+          <div class="drawer-header"><span class="drawer-title">Quadrupel (Quad)</span><button class="drawer-close" onclick="closeDrawer('quad')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Massively complex. Dark fruit, molasses, chocolate, alcohol warmth, spice. The most intense Belgian style. Thick, rich, warming. Best sipped slowly.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">9–13%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Westvleteren 12</span><span class="d-pill">St. Bernardus Abt 12</span><span class="d-pill">Chimay Blue</span><span class="d-pill">La Trappe Quad</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Howe Sound Pothole Filler (dark strong)</span><span class="d-pill d-bc">Central City Quad</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Stilton</span><span class="d-pill">Dark chocolate</span><span class="d-pill">Christmas pudding</span><span class="d-pill">On its own</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Westvleteren 12 is often called the best beer in the world — a Trappist Quad made by monks who only brew what they need. Rich, complex, warming like a fine cognac. Serve it in a wine glass and sip slowly."</div>
+          </div>
+        </div>
+
+        <div class="style-drawer" id="drawer-bsga">
+          <div class="drawer-header"><span class="drawer-title">Belgian Strong Golden Ale</span><button class="drawer-close" onclick="closeDrawer('bsga')">×</button></div>
+          <div class="drawer-body">
+            <div class="d-row"><span class="d-label">Flavour</span><span class="d-val">Pale golden, highly carbonated, deceptively strong. Fruity, spicy, dry, effervescent. Pear, apple, coriander, pepper. The Champagne of Belgian ales.</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">ABV</span><span class="d-val">7.5–9.5%</span></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Examples</span><div class="d-pills"><span class="d-pill">Duvel</span><span class="d-pill">Delirium Tremens</span><span class="d-pill">Piraat</span><span class="d-pill">La Chouffe</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">BC Craft</span><div class="d-pills"><span class="d-pill d-bc">Dageraad Belgian Golden</span><span class="d-pill d-bc">Strange Fellows Populus</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-row"><span class="d-label">Pairs with</span><div class="d-pills"><span class="d-pill">Mussels</span><span class="d-pill">Soft cheese</span><span class="d-pill">Aperitif</span><span class="d-pill">Light appetizers</span></div></div>
+            <div class="d-divider"></div>
+            <div class="d-sell"><strong>💬 How to sell it:</strong> "Duvel looks like a lager but it's nearly 9% — it sneaks up on you. Fruity, spicy, incredibly effervescent. Champagne drinkers and people who like dry sparkling wine tend to love it. The name means 'Devil' in Belgian slang for exactly this reason."</div>
+          </div>
+        </div>
+
+        <div class="row"><span class="row-label">Quick tip</span><span class="row-val"><strong>"Wine drinker wanting beer"</strong> → Saison or Witbier. <strong>"Want something special"</strong> → Tripel or Quad. <strong>"Love dark fruit"</strong> → Dubbel. <strong>"Champagne lover"</strong> → Belgian Strong Golden.</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Beer reference · Internal use</span>
+    <a href="https://www.everythingwine.ca" target="_blank">everythingwine.ca ↗</a>
+  </footer>
+
+</div>
+
+<script>
+  function filter(cat) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    document.querySelectorAll('.card').forEach(card => {
+      card.classList.toggle('hidden', cat !== 'all' && card.dataset.cat !== cat);
+    });
+    document.querySelectorAll('.style-drawer').forEach(d => d.classList.remove('open'));
+  }
+
+  function openDrawer(id, pill) {
+    const drawer = document.getElementById('drawer-' + id);
+    if (!drawer) return;
+    const isOpen = drawer.classList.contains('open');
+    document.querySelectorAll('.style-drawer').forEach(d => d.classList.remove('open'));
+    if (!isOpen) {
+      drawer.classList.add('open');
+      setTimeout(() => drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+  }
+
+  function closeDrawer(id) {
+    const drawer = document.getElementById('drawer-' + id);
+    if (drawer) drawer.classList.remove('open');
+  }
+</script>
+</body>
+</html>
